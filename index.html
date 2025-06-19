@@ -1,105 +1,41 @@
-
+# Lưu nội dung HTML cập nhật thành file index.html để người dùng tải
+html_content = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <title>ÔN BÀI TALK TO KID</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 1rem;
-      font-size: 110%;
-      line-height: 1.7;
-    }
-    h1 {
-      font-size: 160%;
-    }
-    p {
-      font-size: 110%;
-      margin-top: -0.5rem;
-      margin-bottom: 1rem;
-    }
-    #question {
-      font-size: 200%;
-      font-weight: bold;
-      margin: 1.5rem 0;
-      color: #000;
-    }
-    #answer {
-      font-size: 150%;
-      margin: 1rem auto;
-      color: #007b00;
-      display: none;
-      max-width: 90%;
-      line-height: 1.4;
-    }
-    .button-group {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .button-group button {
-      padding: 0.5rem 1rem;
-      font-size: 126%; /* giảm 10% từ 140% */
-      cursor: pointer;
-      border: none;
-      border-radius: 1rem;
-      background: #f2f2f2;
-      color: #0066cc;
-    }
-
-    @media (max-width: 768px) {
-      body {
-        font-size: 102%;
-        line-height: 1.5;
-      }
-      h1 {
-        font-size: 144%;
-      }
-      p {
-        font-size: 96%;
-      }
-      #question {
-        font-size: 168%;
-      }
-      #answer {
-        font-size: 144%;
-      }
-      .button-group {
-        flex-wrap: nowrap;
-        gap: 0.8rem;
-      }
-      .button-group button {
-        font-size: 118%; /* giảm từ 132% */
-        padding: 0.5rem 0.9rem;
-      }
-    }
+    body { font-family: sans-serif; text-align: center; padding: 2rem; }
+    #question { font-size: 1.8rem; margin: 2rem 0; color: #333; }
+    #answer { font-size: 1.5rem; margin: 1rem 0; color: #007b00; display: none; }
+    button { padding: 0.8rem 2rem; font-size: 1rem; cursor: pointer; margin: 0.5rem; }
+    input[type="file"] { margin-top: 1rem; }
   </style>
 </head>
 <body>
   <h1>ÔN BÀI TALK TO KID</h1>
-  <p>Dữ liệu sẽ được update mới sau từng buổi học.</p>
+  <p>Upload file Excel (.xlsx) gồm 2 cột: <strong>TIẾNG VIỆT</strong> và <strong>TIẾNG ANH</strong></p>
+
+  <input type="file" accept=".xlsx" onchange="handleExcel(event)"><br>
 
   <div id="question">[Câu sẽ hiện ở đây]</div>
   <div id="answer">[Câu trả lời]</div>
 
-  <div class="button-group">
-    <button onclick="showAnswer()">👁️ Xem kết quả</button>
-    <button onclick="pickRandom()">🎲 Câu tiếp theo</button>
-  </div>
+  <button onclick="showAnswer()">👁️ Xem kết quả</button>
+  <button onclick="pickRandom()">🎲 Câu tiếp theo</button>
 
   <script>
     let data = [];
     let currentIndex = -1;
 
-    fetch('data.xlsx')
-      .then(response => response.arrayBuffer())
-      .then(arrayBuffer => {
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    function handleExcel(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const workbook = XLSX.read(e.target.result, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const json = XLSX.utils.sheet_to_json(sheet);
@@ -109,16 +45,15 @@
           en: row["TIẾNG ANH"]
         })).filter(item => item.vi && item.en);
 
-        alert("Đã tải " + data.length + " câu từ file Excel.");
-      })
-      .catch(error => {
-        alert("Không thể tải file dữ liệu. Hãy chắc chắn rằng data.xlsx đã được upload vào repository.");
-        console.error(error);
-      });
+        alert("Đã tải " + data.length + " câu từ file Excel. Bấm Câu tiếp theo để bắt đầu.");
+      };
+
+      reader.readAsBinaryString(file);
+    }
 
     function pickRandom() {
       if (data.length === 0) {
-        alert("Dữ liệu chưa sẵn sàng!");
+        alert("Bạn cần tải file trước!");
         return;
       }
       currentIndex = Math.floor(Math.random() * data.length);
@@ -128,19 +63,17 @@
 
     function showAnswer() {
       if (currentIndex === -1) return;
-      const answerText = data[currentIndex].en;
-      document.getElementById("answer").innerText = answerText;
+      document.getElementById("answer").innerText = data[currentIndex].en;
       document.getElementById("answer").style.display = "block";
-
-      const utterance = new SpeechSynthesisUtterance(answerText);
-      utterance.lang = 'en-US';
-      const voices = speechSynthesis.getVoices();
-      const americanVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Google') || v.name.includes('Microsoft')));
-      if (americanVoice) {
-        utterance.voice = americanVoice;
-      }
-      speechSynthesis.speak(utterance);
     }
   </script>
 </body>
 </html>
+"""
+
+# Ghi file
+file_path = "/mnt/data/index.html"
+with open(file_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+file_path
