@@ -6,18 +6,34 @@
   <title>ÔN BÀI TALK TO KID</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 2rem; }
-    #question { font-size: 1.8rem; margin: 2rem 0; color: #333; }
-    #answer { font-size: 1.5rem; margin: 1rem 0; color: #007b00; display: none; }
-    button { padding: 0.8rem 2rem; font-size: 1rem; cursor: pointer; margin: 0.5rem; }
-    input[type="file"] { margin-top: 1rem; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+      font-size: 300%;
+    }
+    #question {
+      font-size: 500%;
+      margin: 2rem 0;
+      color: #333;
+    }
+    #answer {
+      font-size: 300%;
+      margin: 1rem 0;
+      color: #007b00;
+      display: none;
+    }
+    button {
+      padding: 2rem 4rem;
+      font-size: 300%;
+      cursor: pointer;
+      margin: 1rem;
+    }
   </style>
 </head>
 <body>
   <h1>ÔN BÀI TALK TO KID</h1>
-  <p>Upload file Excel (.xlsx) gồm 2 cột: <strong>TIẾNG VIỆT</strong> và <strong>TIẾNG ANH</strong></p>
-
-  <input type="file" accept=".xlsx" onchange="handleExcel(event)"><br>
+  <p>Dữ liệu sẽ được update mới sau từng buổi học.</p>
 
   <div id="question">[Câu sẽ hiện ở đây]</div>
   <div id="answer">[Câu trả lời]</div>
@@ -29,12 +45,10 @@
     let data = [];
     let currentIndex = -1;
 
-    function handleExcel(event) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-        const workbook = XLSX.read(e.target.result, { type: 'binary' });
+    fetch('data.xlsx')
+      .then(response => response.arrayBuffer())
+      .then(arrayBuffer => {
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const json = XLSX.utils.sheet_to_json(sheet);
@@ -44,15 +58,16 @@
           en: row["TIẾNG ANH"]
         })).filter(item => item.vi && item.en);
 
-        alert("Đã tải " + data.length + " câu từ file Excel. Bấm Câu tiếp theo để bắt đầu.");
-      };
-
-      reader.readAsBinaryString(file);
-    }
+        alert("Đã tải " + data.length + " câu từ file Excel.");
+      })
+      .catch(error => {
+        alert("Không thể tải file dữ liệu. Hãy chắc chắn rằng data.xlsx đã được upload vào repository.");
+        console.error(error);
+      });
 
     function pickRandom() {
       if (data.length === 0) {
-        alert("Bạn cần tải file trước!");
+        alert("Dữ liệu chưa sẵn sàng!");
         return;
       }
       currentIndex = Math.floor(Math.random() * data.length);
@@ -62,8 +77,18 @@
 
     function showAnswer() {
       if (currentIndex === -1) return;
-      document.getElementById("answer").innerText = data[currentIndex].en;
+      const answerText = data[currentIndex].en;
+      document.getElementById("answer").innerText = answerText;
       document.getElementById("answer").style.display = "block";
+
+      const utterance = new SpeechSynthesisUtterance(answerText);
+      utterance.lang = 'en-US';
+      const voices = speechSynthesis.getVoices();
+      const americanVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google') || v.name.includes('Microsoft'));
+      if (americanVoice) {
+        utterance.voice = americanVoice;
+      }
+      speechSynthesis.speak(utterance);
     }
   </script>
 </body>
