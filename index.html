@@ -1,312 +1,392 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>ÔN BÀI TALK TO KID</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 1rem;
-      font-size: 110%;
-      line-height: 1.7;
-    }
-    h1 {
-      font-size: 160%;
-    }
-    p {
-      font-size: 110%;
-      margin-top: -0.5rem;
-      margin-bottom: 1rem;
-    }
-    
-    /* Thêm style cho phần chọn chủ đề */
-    .topic-selector {
-      margin: 1.5rem 0;
-      padding: 1rem;
-      background: #f8f9fa;
-      border-radius: 10px;
-      border: 2px solid #e9ecef;
-    }
-    
-    .topic-selector h3 {
-      margin-bottom: 1rem;
-      color: #333;
-      font-size: 120%;
-    }
-    
-    .topic-options {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    
-    .topic-option {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: white;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    
-    .topic-option:hover {
-      border-color: #0066cc;
-      background: #f0f8ff;
-    }
-    
-    .topic-option input[type="radio"] {
-      margin: 0;
-      cursor: pointer;
-    }
-    
-    .topic-option label {
-      cursor: pointer;
-      font-weight: 500;
-    }
-    
-    .select-all-btn {
-      background: #28a745;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
-    
-    .select-all-btn:hover {
-      background: #218838;
-    }
-    
-    .loading {
-      color: #666;
-      font-style: italic;
-    }
-    
-    #question {
-      font-size: 200%;
-      font-weight: bold;
-      margin: 1.5rem 0;
-      color: #000;
-    }
-    #answer {
-      font-size: 150%;
-      margin: 1rem auto;
-      color: #007b00;
-      display: none;
-      max-width: 90%;
-      line-height: 1.4;
-    }
-    .button-group {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .button-group button {
-      padding: 0.5rem 1rem;
-      font-size: 126%; /* giảm 10% từ 140% */
-      cursor: pointer;
-      border: none;
-      border-radius: 1rem;
-      background: #f2f2f2;
-      color: #0066cc;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uspeak - Học Tiếng Anh Qua Phản Xạ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    @media (max-width: 768px) {
-      body {
-        font-size: 102%;
-        line-height: 1.5;
-      }
-      h1 {
-        font-size: 144%;
-      }
-      p {
-        font-size: 96%;
-      }
-      .topic-options {
-        flex-direction: column;
-        align-items: center;
-      }
-      .topic-option {
-        width: 100%;
-        max-width: 300px;
-        justify-content: center;
-      }
-      #question {
-        font-size: 168%;
-      }
-      #answer {
-        font-size: 144%;
-      }
-      .button-group {
-        flex-wrap: nowrap;
-        gap: 0.8rem;
-      }
-      .button-group button {
-        font-size: 118%; /* giảm từ 132% */
-        padding: 0.5rem 0.9rem;
-      }
-    }
-  </style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .topic-selector {
+            margin-bottom: 30px;
+        }
+
+        .topic-selector h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .topic-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .topic-option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .topic-option:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .topic-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #e9ecef;
+        }
+
+        .question {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .answer {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: 600;
+            display: none;
+            margin-bottom: 15px;
+        }
+
+        .answer.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .speak-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .speak-btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            color: #666;
+        }
+
+        .stats span {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .topic-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>ÔN BÀI TALK TO KID</h1>
-  <p>Dữ liệu sẽ được update mới sau từng buổi học.</p>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-language"></i> Uspeak</h1>
+            <p>Học Tiếng Anh Qua Phản Xạ - Chọn chủ đề và bắt đầu luyện tập!</p>
+        </div>
 
-  <!-- Thêm phần chọn chủ đề -->
-  <div class="topic-selector">
-    <h3>Chọn chủ đề:</h3>
-    <div class="topic-options" id="topicOptions">
-      <div class="loading">Đang tải dữ liệu...</div>
+        <div class="topic-selector">
+            <h3>Chọn chủ đề:</h3>
+            <div class="topic-options" id="topicOptions">
+                <div class="loading">Đang tải dữ liệu...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="question" id="question">Chọn chủ đề để bắt đầu luyện tập!</div>
+            <div class="answer" id="answer"></div>
+            <button class="speak-btn" id="speakBtn" style="display: none;">
+                <i class="fas fa-volume-up"></i> Đọc
+            </button>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-primary" id="showAnswerBtn" disabled>
+                <i class="fas fa-eye"></i> Xem kết quả
+            </button>
+            <button class="btn btn-secondary" id="nextBtn" disabled>
+                <i class="fas fa-arrow-right"></i> Câu tiếp theo
+            </button>
+        </div>
+
+        <div class="stats">
+            <p>Đã luyện tập: <span id="practiceCount">0</span> câu</p>
+        </div>
     </div>
-  </div>
 
-  <div id="question">[Câu sẽ hiện ở đây]</div>
-  <div id="answer">[Câu trả lời]</div>
+    <script>
+        let allData = [];
+        let filteredData = [];
+        let currentIndex = -1;
+        let selectedTopic = 'all';
+        let availableTopics = [];
 
-  <div class="button-group">
-    <button onclick="showAnswer()">👁️ Xem kết quả</button>
-    <button onclick="pickRandom()">🎲 Câu tiếp theo</button>
-  </div>
+        fetch('Uspeak_TTK.xlsx')
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => {
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(sheet);
 
-  <script>
-    let allData = [];
-    let filteredData = [];
-    let currentIndex = -1;
-    let selectedTopic = 'all';
-    let availableTopics = [];
+                allData = json.map(row => ({
+                    topic: row["CHU_DE"] ? row["CHU_DE"].toString().trim() : '',
+                    vi: row["DE_BAI"] ? row["DE_BAI"].toString().trim() : '',
+                    en: row["DAP_AN"] ? row["DAP_AN"].toString().trim() : ''
+                })).filter(item => item.vi && item.en && item.topic);
 
-    fetch('Uspeak_TTK.xlsx')
-      .then(response => response.arrayBuffer())
-      .then(arrayBuffer => {
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(sheet);
+                // Tạo danh sách chủ đề duy nhất
+                const topicSet = new Set();
+                allData.forEach(item => {
+                    if (item.topic) {
+                        topicSet.add(item.topic);
+                    }
+                });
+                availableTopics = Array.from(topicSet).sort();
 
-        allData = json.map(row => ({
-          topic: row["CHU_DE"] ? row["CHU_DE"].toString().trim() : '',
-          vi: row["DE_BAI"] ? row["DE_BAI"].toString().trim() : '',
-          en: row["DAP_AN"] ? row["DAP_AN"].toString().trim() : ''
-        })).filter(item => item.vi && item.en && item.topic);
+                // Tạo radio buttons cho các chủ đề
+                createTopicOptions();
+                
+                // Khởi tạo dữ liệu đã lọc
+                filterData();
+                
+                alert("Đã tải " + allData.length + " câu từ " + availableTopics.length + " chủ đề.");
+            })
+            .catch(error => {
+                alert("Không thể tải file dữ liệu. Hãy chắc chắn rằng Uspeak_TTK.xlsx đã được upload vào repository.");
+                console.error(error);
+            });
 
-        // Tạo danh sách chủ đề duy nhất
-        const topicSet = new Set();
-        allData.forEach(item => {
-          if (item.topic) {
-            topicSet.add(item.topic);
-          }
-        });
-        availableTopics = Array.from(topicSet).sort();
+        function createTopicOptions() {
+            const topicOptionsContainer = document.getElementById('topicOptions');
+            topicOptionsContainer.innerHTML = '';
 
-        // Tạo radio buttons cho các chủ đề
-        createTopicOptions();
-        
-        // Khởi tạo dữ liệu đã lọc
-        filterData();
-        
-        alert("Đã tải " + allData.length + " câu từ " + availableTopics.length + " chủ đề.");
-      })
-      .catch(error => {
-        alert("Không thể tải file dữ liệu. Hãy chắc chắn rằng Uspeak_TTK.xlsx đã được upload vào repository.");
-        console.error(error);
-      });
+            // Thêm radio button cho "Tất cả chủ đề"
+            const allTopicsOption = document.createElement('div');
+            allTopicsOption.className = 'topic-option';
+            allTopicsOption.innerHTML = `
+                <input type="radio" id="topic-all" name="topic" value="all" checked>
+                <label for="topic-all">Tất cả chủ đề (${allData.length} câu)</label>
+            `;
+            topicOptionsContainer.appendChild(allTopicsOption);
 
-    function createTopicOptions() {
-      const topicOptionsContainer = document.getElementById('topicOptions');
-      topicOptionsContainer.innerHTML = '';
+            // Thêm radio buttons cho từng chủ đề
+            availableTopics.forEach((topic, index) => {
+                const topicCount = allData.filter(item => item.topic === topic).length;
+                const topicOption = document.createElement('div');
+                topicOption.className = 'topic-option';
+                topicOption.innerHTML = `
+                    <input type="radio" id="topic-${index}" name="topic" value="${topic}">
+                    <label for="topic-${index}">${topic} (${topicCount} câu)</label>
+                `;
+                topicOptionsContainer.appendChild(topicOption);
+            });
 
-      // Thêm radio button cho "Tất cả chủ đề"
-      const allTopicsOption = document.createElement('div');
-      allTopicsOption.className = 'topic-option';
-      allTopicsOption.innerHTML = `
-        <input type="radio" id="topic-all" name="topic" value="all" checked>
-        <label for="topic-all">Tất cả chủ đề (${allData.length} câu)</label>
-      `;
-      topicOptionsContainer.appendChild(allTopicsOption);
+            // Thêm nút "Chọn tất cả"
+            const selectAllBtn = document.createElement('button');
+            selectAllBtn.className = 'select-all-btn';
+            selectAllBtn.onclick = selectAllTopics;
+            selectAllBtn.textContent = 'Chọn tất cả';
+            topicOptionsContainer.appendChild(selectAllBtn);
 
-      // Thêm radio buttons cho từng chủ đề
-      availableTopics.forEach((topic, index) => {
-        const topicCount = allData.filter(item => item.topic === topic).length;
-        const topicOption = document.createElement('div');
-        topicOption.className = 'topic-option';
-        topicOption.innerHTML = `
-          <input type="radio" id="topic-${index}" name="topic" value="${topic}">
-          <label for="topic-${index}">${topic} (${topicCount} câu)</label>
-        `;
-        topicOptionsContainer.appendChild(topicOption);
-      });
+            // Thêm event listeners cho radio buttons
+            const radioButtons = document.querySelectorAll('input[name="topic"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    selectedTopic = this.value;
+                    filterData();
+                });
+            });
+        }
 
-      // Thêm nút "Chọn tất cả"
-      const selectAllBtn = document.createElement('button');
-      selectAllBtn.className = 'select-all-btn';
-      selectAllBtn.onclick = selectAllTopics;
-      selectAllBtn.textContent = 'Chọn tất cả';
-      topicOptionsContainer.appendChild(selectAllBtn);
+        function selectAllTopics() {
+            document.getElementById('topic-all').checked = true;
+            selectedTopic = 'all';
+            filterData();
+        }
 
-      // Thêm event listeners cho radio buttons
-      const radioButtons = document.querySelectorAll('input[name="topic"]');
-      radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
-          selectedTopic = this.value;
-          filterData();
-        });
-      });
-    }
+        function filterData() {
+            if (selectedTopic === 'all') {
+                filteredData = allData;
+            } else {
+                filteredData = allData.filter(item => item.topic === selectedTopic);
+            }
+            console.log(`Đã lọc ${filteredData.length} câu cho chủ đề: ${selectedTopic}`);
+        }
 
-    function selectAllTopics() {
-      document.getElementById('topic-all').checked = true;
-      selectedTopic = 'all';
-      filterData();
-    }
+        function pickRandom() {
+            if (filteredData.length === 0) {
+                alert("Không có câu nào cho chủ đề đã chọn!");
+                return;
+            }
+            currentIndex = Math.floor(Math.random() * filteredData.length);
+            document.getElementById("question").innerText = filteredData[currentIndex].vi;
+            document.getElementById("answer").style.display = "none";
+        }
 
-    function filterData() {
-      if (selectedTopic === 'all') {
-        filteredData = allData;
-      } else {
-        filteredData = allData.filter(item => item.topic === selectedTopic);
-      }
-      console.log(`Đã lọc ${filteredData.length} câu cho chủ đề: ${selectedTopic}`);
-    }
+        function showAnswer() {
+            if (currentIndex === -1) {
+                alert("Hãy chọn câu tiếp theo trước!");
+                return;
+            }
+            const answerText = filteredData[currentIndex].en;
+            document.getElementById("answer").innerText = answerText;
+            document.getElementById("answer").style.display = "block";
 
-    function pickRandom() {
-      if (filteredData.length === 0) {
-        alert("Không có câu nào cho chủ đề đã chọn!");
-        return;
-      }
-      currentIndex = Math.floor(Math.random() * filteredData.length);
-      document.getElementById("question").innerText = filteredData[currentIndex].vi;
-      document.getElementById("answer").style.display = "none";
-    }
-
-    function showAnswer() {
-      if (currentIndex === -1) {
-        alert("Hãy chọn câu tiếp theo trước!");
-        return;
-      }
-      const answerText = filteredData[currentIndex].en;
-      document.getElementById("answer").innerText = answerText;
-      document.getElementById("answer").style.display = "block";
-
-      const utterance = new SpeechSynthesisUtterance(answerText);
-      utterance.lang = 'en-US';
-      const voices = speechSynthesis.getVoices();
-      const americanVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Google') || v.name.includes('Microsoft')));
-      if (americanVoice) {
-        utterance.voice = americanVoice;
-      }
-      speechSynthesis.speak(utterance);
-    }
-  </script>
+            const utterance = new SpeechSynthesisUtterance(answerText);
+            utterance.lang = 'en-US';
+            const voices = speechSynthesis.getVoices();
+            const americanVoice = voices.find(v => v.lang === 'en-US' && (v.name.includes('Google') || v.name.includes('Microsoft')));
+            if (americanVoice) {
+                utterance.voice = americanVoice;
+            }
+            speechSynthesis.speak(utterance);
+        }
+    </script>
 </body>
-</html>
+</html> 
