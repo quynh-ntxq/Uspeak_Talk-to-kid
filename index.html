@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -22,6 +21,77 @@
       margin-top: -0.5rem;
       margin-bottom: 1rem;
     }
+    
+    /* Thêm style cho phần chọn chủ đề */
+    .topic-selector {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border: 2px solid #e9ecef;
+    }
+    
+    .topic-selector h3 {
+      margin-bottom: 1rem;
+      color: #333;
+      font-size: 120%;
+    }
+    
+    .topic-options {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .topic-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .topic-option:hover {
+      border-color: #0066cc;
+      background: #f0f8ff;
+    }
+    
+    .topic-option input[type="radio"] {
+      margin: 0;
+      cursor: pointer;
+    }
+    
+    .topic-option label {
+      cursor: pointer;
+      font-weight: 500;
+    }
+    
+    .select-all-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .select-all-btn:hover {
+      background: #218838;
+    }
+    
+    .loading {
+      color: #666;
+      font-style: italic;
+    }
+    
     #question {
       font-size: 200%;
       font-weight: bold;
@@ -44,15 +114,12 @@
     }
     .button-group button {
       padding: 0.5rem 1rem;
-      font-size: 126%;
+      font-size: 126%; /* giảm 10% từ 140% */
       cursor: pointer;
       border: none;
       border-radius: 1rem;
       background: #f2f2f2;
       color: #0066cc;
-    }
-    input[type="file"] {
-      margin: 1rem auto;
     }
 
     @media (max-width: 768px) {
@@ -66,14 +133,27 @@
       p {
         font-size: 96%;
       }
+      .topic-options {
+        flex-direction: column;
+        align-items: center;
+      }
+      .topic-option {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+      }
       #question {
         font-size: 168%;
       }
       #answer {
         font-size: 144%;
       }
+      .button-group {
+        flex-wrap: nowrap;
+        gap: 0.8rem;
+      }
       .button-group button {
-        font-size: 118%;
+        font-size: 118%; /* giảm từ 132% */
         padding: 0.5rem 0.9rem;
       }
     }
@@ -81,9 +161,16 @@
 </head>
 <body>
   <h1>ÔN BÀI TALK TO KID</h1>
-  <p>Bạn có thể tự tải file hoặc dùng sẵn file `data.xlsx` nếu có trên hệ thống.</p>
+  <p>Dữ liệu sẽ được update mới sau từng buổi học.</p>
 
-  <input type="file" accept=".xlsx" onchange="handleExcelUpload(event)">
+  <!-- Thêm phần chọn chủ đề -->
+  <div class="topic-selector">
+    <h3>Chọn chủ đề:</h3>
+    <div class="topic-options" id="topicOptions">
+      <div class="loading">Đang tải dữ liệu...</div>
+    </div>
+  </div>
+
   <div id="question">[Câu sẽ hiện ở đây]</div>
   <div id="answer">[Câu trả lời]</div>
 
@@ -93,64 +180,121 @@
   </div>
 
   <script>
-    let data = [];
+    let allData = [];
+    let filteredData = [];
     let currentIndex = -1;
+    let selectedTopic = 'all';
+    let availableTopics = [];
 
-    // Tự động tải data.xlsx nếu có
-    fetch('data.xlsx')
+    fetch('Uspeak_TTK.xlsx')
       .then(response => response.arrayBuffer())
-      .then(arrayBuffer => processWorkbook(arrayBuffer))
-      .catch(() => {
-        console.warn("Không tìm thấy file data.xlsx, chờ người dùng upload.");
+      .then(arrayBuffer => {
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(sheet);
+
+        allData = json.map(row => ({
+          topic: row["CHU_DE"] ? row["CHU_DE"].toString().trim() : '',
+          vi: row["DE_BAI"] ? row["DE_BAI"].toString().trim() : '',
+          en: row["DAP_AN"] ? row["DAP_AN"].toString().trim() : ''
+        })).filter(item => item.vi && item.en && item.topic);
+
+        // Tạo danh sách chủ đề duy nhất
+        const topicSet = new Set();
+        allData.forEach(item => {
+          if (item.topic) {
+            topicSet.add(item.topic);
+          }
+        });
+        availableTopics = Array.from(topicSet).sort();
+
+        // Tạo radio buttons cho các chủ đề
+        createTopicOptions();
+        
+        // Khởi tạo dữ liệu đã lọc
+        filterData();
+        
+        alert("Đã tải " + allData.length + " câu từ " + availableTopics.length + " chủ đề.");
+      })
+      .catch(error => {
+        alert("Không thể tải file dữ liệu. Hãy chắc chắn rằng Uspeak_TTK.xlsx đã được upload vào repository.");
+        console.error(error);
       });
 
-    function handleExcelUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const dataArray = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(dataArray, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(sheet);
-        loadData(json);
-      };
-      reader.readAsArrayBuffer(file);
+    function createTopicOptions() {
+      const topicOptionsContainer = document.getElementById('topicOptions');
+      topicOptionsContainer.innerHTML = '';
+
+      // Thêm radio button cho "Tất cả chủ đề"
+      const allTopicsOption = document.createElement('div');
+      allTopicsOption.className = 'topic-option';
+      allTopicsOption.innerHTML = `
+        <input type="radio" id="topic-all" name="topic" value="all" checked>
+        <label for="topic-all">Tất cả chủ đề (${allData.length} câu)</label>
+      `;
+      topicOptionsContainer.appendChild(allTopicsOption);
+
+      // Thêm radio buttons cho từng chủ đề
+      availableTopics.forEach((topic, index) => {
+        const topicCount = allData.filter(item => item.topic === topic).length;
+        const topicOption = document.createElement('div');
+        topicOption.className = 'topic-option';
+        topicOption.innerHTML = `
+          <input type="radio" id="topic-${index}" name="topic" value="${topic}">
+          <label for="topic-${index}">${topic} (${topicCount} câu)</label>
+        `;
+        topicOptionsContainer.appendChild(topicOption);
+      });
+
+      // Thêm nút "Chọn tất cả"
+      const selectAllBtn = document.createElement('button');
+      selectAllBtn.className = 'select-all-btn';
+      selectAllBtn.onclick = selectAllTopics;
+      selectAllBtn.textContent = 'Chọn tất cả';
+      topicOptionsContainer.appendChild(selectAllBtn);
+
+      // Thêm event listeners cho radio buttons
+      const radioButtons = document.querySelectorAll('input[name="topic"]');
+      radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+          selectedTopic = this.value;
+          filterData();
+        });
+      });
     }
 
-    function processWorkbook(arrayBuffer) {
-      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(sheet);
-      loadData(json);
+    function selectAllTopics() {
+      document.getElementById('topic-all').checked = true;
+      selectedTopic = 'all';
+      filterData();
     }
 
-    function loadData(json) {
-      data = json.map(row => ({
-        vi: row["TIẾNG VIỆT"],
-        en: row["TIẾNG ANH"]
-      })).filter(item => item.vi && item.en);
-
-      if (data.length > 0) {
-        alert("Đã nạp " + data.length + " câu từ file.");
+    function filterData() {
+      if (selectedTopic === 'all') {
+        filteredData = allData;
       } else {
-        alert("Không tìm thấy dữ liệu hợp lệ trong file.");
+        filteredData = allData.filter(item => item.topic === selectedTopic);
       }
+      console.log(`Đã lọc ${filteredData.length} câu cho chủ đề: ${selectedTopic}`);
     }
 
     function pickRandom() {
-      if (data.length === 0) {
-        alert("Dữ liệu chưa sẵn sàng!");
+      if (filteredData.length === 0) {
+        alert("Không có câu nào cho chủ đề đã chọn!");
         return;
       }
-      currentIndex = Math.floor(Math.random() * data.length);
-      document.getElementById("question").innerText = data[currentIndex].vi;
+      currentIndex = Math.floor(Math.random() * filteredData.length);
+      document.getElementById("question").innerText = filteredData[currentIndex].vi;
       document.getElementById("answer").style.display = "none";
     }
 
     function showAnswer() {
-      if (currentIndex === -1) return;
-      const answerText = data[currentIndex].en;
+      if (currentIndex === -1) {
+        alert("Hãy chọn câu tiếp theo trước!");
+        return;
+      }
+      const answerText = filteredData[currentIndex].en;
       document.getElementById("answer").innerText = answerText;
       document.getElementById("answer").style.display = "block";
 
