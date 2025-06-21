@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Uspeak - Talk to kid</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {
@@ -102,12 +101,8 @@
     let allData = [], filteredData = [], currentIndex = -1;
 
     function autoLoadExcelFile() {
-      const fileName = 'Uspeak_TTK.xlsx';
-      fetch(fileName)
-        .then(res => {
-          if (!res.ok) throw new Error("Không thể tải file Excel");
-          return res.arrayBuffer();
-        })
+      fetch('Uspeak_TTK.xlsx')
+        .then(res => res.arrayBuffer())
         .then(buffer => {
           const workbook = XLSX.read(buffer, { type: 'array' });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -132,11 +127,11 @@
       const topics = [...new Set(allData.map(d => d.topic))].sort();
       container.innerHTML = '';
 
-      // "Tất cả" checkbox
-      const allOption = document.createElement("div");
-      allOption.className = "topic-option";
-      allOption.innerHTML = `<input type="checkbox" id="allTopics" checked> <label for="allTopics"><strong>Tất cả</strong></label>`;
-      container.appendChild(allOption);
+      // Thêm checkbox "Tất cả"
+      const allBox = document.createElement("div");
+      allBox.className = "topic-option";
+      allBox.innerHTML = `<input type="checkbox" id="allTopics"> <label for="allTopics"><strong>Tất cả</strong></label>`;
+      container.appendChild(allBox);
 
       // Các chủ đề cụ thể
       topics.forEach(topic => {
@@ -150,23 +145,29 @@
         cb.addEventListener("change", handleTopicFilter);
       });
 
-      handleTopicFilter();
+      handleTopicFilter(); // gọi ban đầu
     }
 
     function handleTopicFilter() {
       const checkAll = document.getElementById("allTopics").checked;
+      const checkboxes = document.querySelectorAll(".topicCheckbox");
+
+      let selectedTopics = [];
+
       if (checkAll) {
-        document.querySelectorAll('.topicCheckbox').forEach(cb => cb.checked = false);
         filteredData = [...allData];
+        checkboxes.forEach(cb => cb.checked = false);
       } else {
-        const selected = Array.from(document.querySelectorAll(".topicCheckbox:checked")).map(cb => cb.value);
-        filteredData = allData.filter(item => selected.includes(item.topic));
+        selectedTopics = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+        filteredData = allData.filter(item => selectedTopics.includes(item.topic));
       }
 
       document.getElementById("nextBtn").disabled = filteredData.length === 0;
       document.getElementById("showAnswerBtn").disabled = true;
-      if (filteredData.length > 0) nextQuestion();
-      else {
+
+      if (filteredData.length > 0) {
+        nextQuestion();
+      } else {
         document.getElementById("question").innerText = "Vui lòng chọn ít nhất một chủ đề!";
         document.getElementById("answer").innerText = "";
       }
