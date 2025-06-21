@@ -44,7 +44,7 @@
     }
     .answer {
       font-size: 1.2em;
-      color: red;
+      color: green;
       font-weight: bold;
       display: none;
       margin-bottom: 10px;
@@ -195,6 +195,9 @@
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = "en-US";
+      const voices = speechSynthesis.getVoices();
+      const preferred = voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('google'));
+      if (preferred) utterance.voice = preferred;
       speechSynthesis.speak(utterance);
     }
 
