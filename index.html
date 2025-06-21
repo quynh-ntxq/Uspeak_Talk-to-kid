@@ -7,11 +7,11 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    * {margin: 0; padding: 0; box-sizing: border-box;}
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #667eea, #764ba2);
       min-height: 100vh;
+      margin: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -21,24 +21,48 @@
       background: white;
       border-radius: 20px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-      padding: 40px;
+      padding: 30px;
       max-width: 800px;
       width: 100%;
       text-align: center;
     }
     .header h1 {
-      font-size: 2.5em;
+      font-size: 2em;
       background: linear-gradient(45deg, #667eea, #764ba2);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .question { font-size: 1.4em; margin: 20px 0; color: #333; }
-    .answer { font-size: 1.2em; color: #667eea; font-weight: bold; display: none; margin-bottom: 10px; }
+    .question {
+      font-size: 1.3em;
+      margin: 20px 0;
+      color: #333;
+    }
+    .answer {
+      font-size: 1.2em;
+      color: #667eea;
+      font-weight: bold;
+      display: none;
+      margin-bottom: 10px;
+    }
     .answer.show { display: block; }
-    .btn {padding: 10px 20px; border: none; border-radius: 25px; margin: 10px; font-weight: bold; cursor: pointer;}
-    .btn-primary {background: #667eea; color: white;}
-    .btn-secondary {background: #6c757d; color: white;}
-    .topic-options {display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px;}
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 20px;
+      margin: 10px;
+      font-weight: bold;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .btn-primary { background: #667eea; color: white; }
+    .btn-secondary { background: #6c757d; color: white; }
+    .topic-options {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
     .topic-option {
       background: #f0f0f0;
       padding: 10px 15px;
@@ -56,11 +80,11 @@
   <div class="container">
     <div class="header">
       <h1><i class="fas fa-language"></i> Uspeak</h1>
-      <p>Học Tiếng Anh Qua Phản Xạ - Tự động đọc file Excel</p>
+      <p>Học Tiếng Anh Phản Xạ từ file Excel</p>
     </div>
 
     <div id="topicOptions" class="topic-options">Đang tải chủ đề...</div>
-    <div class="question" id="question">Chọn chủ đề để bắt đầu luyện tập!</div>
+    <div class="question" id="question">Đang tải dữ liệu...</div>
     <div class="answer" id="answer"></div>
 
     <button class="btn btn-primary" id="showAnswerBtn" disabled>Xem kết quả</button>
@@ -81,6 +105,7 @@
           const workbook = XLSX.read(buffer, { type: 'array' });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const json = XLSX.utils.sheet_to_json(sheet);
+
           allData = json.map(row => ({
             topic: row["CHU_DE"]?.toString().trim(),
             vi: row["DE_BAI"]?.toString().trim(),
@@ -99,7 +124,8 @@
       const container = document.getElementById("topicOptions");
       const topics = [...new Set(allData.map(d => d.topic))];
       container.innerHTML = '';
-      topics.forEach(topic => {
+
+      topics.forEach((topic, index) => {
         const btn = document.createElement('div');
         btn.className = 'topic-option';
         btn.textContent = topic;
@@ -113,6 +139,8 @@
           nextQuestion();
         };
         container.appendChild(btn);
+
+        if (index === 0) btn.click(); // Tự động chọn chủ đề đầu tiên
       });
     }
 
@@ -121,8 +149,8 @@
       currentIndex = Math.floor(Math.random() * filteredData.length);
       const q = filteredData[currentIndex];
       document.getElementById("question").innerText = q.vi;
-      document.getElementById("answer").classList.remove("show");
       document.getElementById("answer").innerText = q.en;
+      document.getElementById("answer").classList.remove("show");
       document.getElementById("showAnswerBtn").disabled = false;
     }
 
