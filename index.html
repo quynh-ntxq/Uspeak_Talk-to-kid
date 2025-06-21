@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Uspeak - Talk to kid</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: linear-gradient(135deg, #002F87, #6A75B3);
       min-height: 100vh;
       margin: 0;
       display: flex;
@@ -27,9 +28,7 @@
     }
     .header h1 {
       font-size: 2em;
-      background: linear-gradient(45deg, #667eea, #764ba2);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #002F87;
       margin-bottom: 10px;
     }
     .header p {
@@ -38,14 +37,14 @@
       margin-bottom: 20px;
     }
     .question {
-      font-size: 2em;
+      font-size: 2.2em;
       font-weight: bold;
       margin: 25px 0;
       color: #333;
     }
     .answer {
       font-size: 1.2em;
-      color: #667eea;
+      color: #002F87;
       font-weight: bold;
       display: none;
       margin-bottom: 10px;
@@ -60,8 +59,8 @@
       font-size: 1em;
       cursor: pointer;
     }
-    .btn-primary { background: #667eea; color: white; }
-    .btn-secondary { background: #6c757d; color: white; }
+    .btn-primary { background: #002F87; color: white; }
+    .btn-secondary { background: #6A75B3; color: white; }
     .topic-options {
       display: flex;
       flex-wrap: wrap;
@@ -89,37 +88,51 @@
       <p>Dữ liệu sẽ được update mới sau từng buổi học.</p>
     </div>
 
-    <div id="topicOptions" class="topic-options">Đang tải chủ đề...</div>
-    <div class="question" id="question">Đang tải dữ liệu...</div>
+    <div id="topicOptions" class="topic-options">Đang tải dữ liệu...</div>
+    <div class="question" id="question">Chưa có dữ liệu.</div>
     <div class="answer" id="answer"></div>
 
-    <button class="btn btn-primary" id="showAnswerBtn" disabled>Xem kết quả</button>
-    <button class="btn btn-secondary" id="nextBtn" disabled>Câu tiếp theo</button>
+    <button class="btn btn-primary" id="showAnswerBtn" disabled><i class="fa fa-eye"></i> Xem kết quả</button>
+    <button class="btn btn-secondary" id="nextBtn" disabled><i class="fa fa-dice"></i> Câu tiếp theo</button>
   </div>
 
   <script>
     let allData = [], filteredData = [], currentIndex = -1;
 
-    function autoLoadExcelFile() {
-      fetch('Uspeak_TTK.xlsx')
-        .then(res => res.arrayBuffer())
-        .then(buffer => {
-          const workbook = XLSX.read(buffer, { type: 'array' });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const json = XLSX.utils.sheet_to_json(sheet);
+    async function tryAutoDetectExcel() {
+      try {
+        const links = await fetch('./').then(res => res.text());
+        const matched = [...links.matchAll(/href="([^"]+\.xlsx)"/g)].map(m => m[1]);
+        const unique = [...new Set(matched)];
 
-          allData = json.map(row => ({
-            topic: row["CHU_DE"]?.toString().trim(),
-            vi: row["DE_BAI"]?.toString().trim(),
-            en: row["DAP_AN"]?.toString().trim()
-          })).filter(item => item.topic && item.vi && item.en);
+        if (unique.length === 0) {
+          document.getElementById("question").innerText = "Không tìm thấy file .xlsx nào!";
+          return;
+        }
 
-          createTopicCheckboxes();
-        })
-        .catch(err => {
-          document.getElementById("topicOptions").innerHTML = "<div style='color:red;'>Không tải được file Excel.</div>";
-          console.error(err);
-        });
+        for (const file of unique) {
+          try {
+            const res = await fetch(file);
+            const buffer = await res.arrayBuffer();
+            const workbook = XLSX.read(buffer, { type: "array" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet);
+
+            allData = json.map(row => ({
+              topic: row["CHU_DE"]?.toString().trim(),
+              vi: row["DE_BAI"]?.toString().trim(),
+              en: row["DAP_AN"]?.toString().trim()
+            })).filter(item => item.topic && item.vi && item.en);
+
+            createTopicCheckboxes();
+            return;
+          } catch (err) {
+            console.log("Không thể đọc file:", file);
+          }
+        }
+      } catch (err) {
+        document.getElementById("question").innerText = "Lỗi khi tìm file Excel.";
+      }
     }
 
     function createTopicCheckboxes() {
@@ -193,7 +206,7 @@
     document.getElementById("nextBtn").addEventListener("click", nextQuestion);
     document.getElementById("showAnswerBtn").addEventListener("click", showAnswer);
 
-    autoLoadExcelFile();
+    tryAutoDetectExcel();
   </script>
 </body>
 </html>
