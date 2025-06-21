@@ -36,11 +36,12 @@
     .header p {
       font-size: 1em;
       color: #666;
+      margin-bottom: 20px;
     }
     .question {
-      font-size: 1.8em;
+      font-size: 2em;
       font-weight: bold;
-      margin: 20px 0;
+      margin: 25px 0;
       color: #333;
     }
     .answer {
@@ -70,13 +71,12 @@
       margin-top: 10px;
     }
     .topic-option {
-      display: flex;
-      align-items: center;
-      gap: 5px;
       background: #f0f0f0;
       padding: 8px 12px;
       border-radius: 10px;
-      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .topic-option input[type="checkbox"] {
       cursor: pointer;
@@ -132,12 +132,13 @@
       const topics = [...new Set(allData.map(d => d.topic))].sort();
       container.innerHTML = '';
 
-      // Tùy chọn "Tất cả"
+      // "Tất cả" checkbox
       const allOption = document.createElement("div");
       allOption.className = "topic-option";
       allOption.innerHTML = `<input type="checkbox" id="allTopics" checked> <label for="allTopics"><strong>Tất cả</strong></label>`;
       container.appendChild(allOption);
 
+      // Các chủ đề cụ thể
       topics.forEach(topic => {
         const div = document.createElement("div");
         div.className = "topic-option";
@@ -145,18 +146,17 @@
         container.appendChild(div);
       });
 
-      // Event: mỗi lần thay đổi
       container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
         cb.addEventListener("change", handleTopicFilter);
       });
 
-      handleTopicFilter(); // Gọi lần đầu khi mở web
+      handleTopicFilter();
     }
 
     function handleTopicFilter() {
       const checkAll = document.getElementById("allTopics").checked;
       if (checkAll) {
-        container.querySelectorAll('.topicCheckbox').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.topicCheckbox').forEach(cb => cb.checked = false);
         filteredData = [...allData];
       } else {
         const selected = Array.from(document.querySelectorAll(".topicCheckbox:checked")).map(cb => cb.value);
@@ -178,4 +178,23 @@
       const q = filteredData[currentIndex];
       document.getElementById("question").innerText = q.vi;
       document.getElementById("answer").innerText = q.en;
-      document.getE
+      document.getElementById("answer").classList.remove("show");
+      document.getElementById("showAnswerBtn").disabled = false;
+    }
+
+    function showAnswer() {
+      const text = document.getElementById("answer").innerText;
+      document.getElementById("answer").classList.add("show");
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      speechSynthesis.speak(utterance);
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", nextQuestion);
+    document.getElementById("showAnswerBtn").addEventListener("click", showAnswer);
+
+    autoLoadExcelFile();
+  </script>
+</body>
+</html>
