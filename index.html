@@ -2,59 +2,84 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Uspeak - Talk to kid</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>USPEAK – Talk to Kid</title>
+  <!-- XLSX to read Excel -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root { --brand:#002F87; --ok:#4CAF50; }
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
+    :root { --brand:#002F87; --ok:#2fad4b; --fg:#222; --muted:#667085; }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html,body{ height:100%; }
+    body{
+      margin:0; font-family: system-ui, "Segoe UI", Roboto, sans-serif;
       background: linear-gradient(135deg, #002F87, #6A75B3);
-      min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; padding: 20px;
+      display:flex; align-items:center; justify-content:center; padding:16px;
     }
-    .container {
-      background: #fff; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,.1);
-      padding: 24px; max-width: 960px; width: 100%;
+    .container{
+      width:100%; max-width:960px; background:#fff; border-radius:20px;
+      box-shadow:0 16px 36px rgba(0,0,0,.12); padding:18px 16px;
     }
-    .header h1 { font-size: 1.6rem; color: #e11; margin: 0 0 6px; text-align: center; }
-    .header p { margin: 0 0 14px; color: #666; text-align: center; }
-    .topic-wrap { margin: 10px 0 14px; }
-    .topic-title { font-weight: 700; margin: 0 0 8px; color: #333; display:flex; align-items:center; gap:8px;}
-    .topic-options {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 10px;
-      text-align: left;
+    .header{ text-align:center; }
+    .header h1{ margin:4px 0 6px; font-size:24px; color:#e11; }
+    .header p{ margin:0 0 12px; color:var(--muted); font-size:14px; }
+
+    .topic-wrap{ margin:6px 0 10px; }
+    .topic-title{ font-weight:700; color:var(--fg); display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+
+    /* Compact grid (~1/2 size) */
+    .topic-options{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap:6px; text-align:left;
     }
-    .topic-option {
-      background: #f6f7fb;
-      border: 1px solid #e6e8f0;
-      padding: 8px 10px;
-      border-radius: 10px;
-      display: flex; align-items: center; gap: 8px;
+    .topic-option{
+      background:#f6f7fb; border:1px solid #e6e8f0; border-radius:8px;
+      padding:4px 6px; display:flex; align-items:center; gap:6px;
+      font-size:.84rem; line-height:1.2;
     }
-    .topic-option input { cursor: pointer; }
-    .question {
-      font-size: 1.6rem; font-weight: 700; margin: 16px 0 8px; color: #222; text-align:center;
-      min-height: 2.2em; /* avoid jump */
+    .topic-option input{ width:18px; height:18px; cursor:pointer; }
+
+    .question{
+      text-align:center; color:var(--fg); font-weight:800;
+      margin:14px 0 6px; min-height:2.2em; font-size:22px;
     }
-    .answer {
-      font-size: 1.15rem; color: #0a7a0a; font-weight: 700; display: none; margin-bottom: 8px; text-align:center;
-      min-height: 1.8em;
+    .answer{
+      text-align:center; color:#0a7a0a; font-weight:700;
+      display:none; margin-bottom:6px; min-height:1.8em; font-size:18px;
     }
-    .answer.show { display: block; }
-    #progress { font-weight: 700; margin: 6px 0 14px; text-align:center; }
-    .actions { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
-    .btn {
-      padding: 12px 18px; border: none; border-radius: 20px; font-weight: 700; font-size: 1rem; cursor: pointer;
-      display:inline-flex; align-items:center; gap:8px;
+    .answer.show{ display:block; }
+    #progress{ text-align:center; font-weight:700; margin:6px 0 12px; }
+
+    .actions{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    .btn{
+      border:none; border-radius:999px; padding:12px 16px;
+      font-weight:800; font-size:16px; color:#fff; display:inline-flex; align-items:center; gap:8px;
+      cursor:pointer; touch-action:manipulation;
     }
-    .btn[disabled] { opacity: .5; cursor: not-allowed; }
-    .btn-primary { background: var(--brand); color: #fff; }
-    .btn-secondary { background: var(--ok); color: #fff; }
-    .hint { text-align:center; font-size:.9rem; color:#666; margin-top:6px;}
+    .btn[disabled]{ opacity:.5; cursor:not-allowed; }
+    .btn-primary{ background:var(--brand); }
+    .btn-secondary{ background:var(--ok); }
+    .hint{ text-align:center; color:var(--muted); font-size:12px; margin-top:6px; }
+
+    /* —— Mobile first —— */
+    @media (max-width: 640px){
+      body{ padding:12px; }
+      .container{ padding:14px 12px; border-radius:16px; }
+      .header h1{ font-size:20px; }
+      .header p{ font-size:13px; }
+      .topic-options{ grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px; } /* 2 cột trên màn nhỏ */
+      .topic-option{ padding:4px 6px; font-size:.82rem; }
+      .question{ font-size:20px; }
+      .answer{ font-size:16px; }
+      .btn{ width:100%; justify-content:center; padding:12px 14px; font-size:15px; }
+      .actions{ gap:6px; }
+    }
+    /* Tablet */
+    @media (min-width: 641px) and (max-width: 900px){
+      .topic-options{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+    }
   </style>
 </head>
 <body>
@@ -74,127 +99,129 @@
     <div id="progress">0/0 câu</div>
 
     <div class="actions">
-      <button class="btn btn-primary" id="showAnswerBtn" disabled><i class="fa fa-eye"></i> Xem kết quả (Space)</button>
-      <button class="btn btn-secondary" id="nextBtn" disabled><i class="fa fa-dice"></i> Câu tiếp theo (Enter)</button>
+      <button class="btn btn-primary" id="showAnswerBtn" disabled><i class="fa fa-eye"></i> Xem kết quả</button>
+      <button class="btn btn-secondary" id="nextBtn" disabled><i class="fa fa-dice"></i> Câu tiếp theo</button>
     </div>
-    <div class="hint">Mẹo: Bấm <b>Space</b> để xem đáp án, <b>Enter</b> để sang câu tiếp theo.</div>
+    <div class="hint">Mẹo: Trên điện thoại, ấn “Xem kết quả” để nghe phát âm.</div>
   </div>
 
   <script>
-    // ---------------- State ----------------
-    let allData = [], filteredData = [], usedIndexes = [], currentIndex = -1;
-    let voices = [];
-    const possibleFiles = ['Uspeak_TTK.xlsx', 'data.xlsx'];
+    // ---- State ----
+    let allData=[], filteredData=[], usedIndexes=[], currentIndex=-1, voices=[];
+    const possibleFiles=['Uspeak_TTK.xlsx','data.xlsx'];
 
-    // ---------------- Data Loading ----------------
-    async function tryLoadExcelFiles() {
-      for (const file of possibleFiles) {
-        try {
+    // ---- Voices (safe for mobile) ----
+    function initVoices(){ voices = speechSynthesis.getVoices(); }
+    if ('speechSynthesis' in window){
+      speechSynthesis.addEventListener('voiceschanged', initVoices);
+      initVoices();
+    }
+
+    // ---- Load Excel ----
+    async function tryLoadExcelFiles(){
+      for(const file of possibleFiles){
+        try{
           const res = await fetch(file);
-          if (!res.ok) continue;
-
-          const buffer = await res.arrayBuffer();
-          const workbook = XLSX.read(buffer, { type: "array" });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          if(!res.ok) continue;
+          const buf = await res.arrayBuffer();
+          const wb = XLSX.read(buf, {type:"array"});
+          const sheet = wb.Sheets[wb.SheetNames[0]];
           const json = XLSX.utils.sheet_to_json(sheet);
 
-          const mapped = json.map(row => ({
-            topic: row["CHU_DE"]?.toString().trim(),
-            topicKey: row["CHU_DE"]?.toString().trim().toLowerCase(),
-            vi: row["DE_BAI"]?.toString().trim(),
-            en: row["DAP_AN"]?.toString().trim()
-          })).filter(item => item.topic && item.vi && item.en);
-
-          if (!mapped.length) continue;
+          const mapped = json.map(r=>({
+            topic: r["CHU_DE"]?.toString().trim(),                   // giữ nguyên số thứ tự có sẵn
+            topicKey: r["CHU_DE"]?.toString().trim().toLowerCase(),  // key để lọc không phân biệt hoa/thường
+            vi: r["DE_BAI"]?.toString().trim(),
+            en: r["DAP_AN"]?.toString().trim()
+          })).filter(x=>x.topic && x.vi && x.en);
+          if(!mapped.length) continue;
 
           allData = mapped;
           createTopicCheckboxes();
           return;
-        } catch (err) {
-          console.log("Không thể đọc file:", file, err);
-        }
+        }catch(e){ console.log("Không thể đọc file:", file, e); }
       }
-      document.getElementById("topicOptions").innerHTML = '<div style="grid-column:1/-1;color:#b00">Không tìm thấy file Excel phù hợp!</div>';
-      document.getElementById("question").innerText = "Vui lòng kiểm tra tên cột: CHU_DE, DE_BAI, DAP_AN.";
+      document.getElementById("topicOptions").innerHTML =
+        '<div style="grid-column:1/-1;color:#b00">Không tìm thấy file Excel phù hợp!</div>';
+      document.getElementById("question").innerText =
+        "Kiểm tra tên cột: CHU_DE, DE_BAI, DAP_AN và đặt file .xlsx cùng thư mục.";
     }
 
-    // ---------------- Topic Grid (numbered) ----------------
-    function createTopicCheckboxes() {
+    // ---- Build topic grid (use numbering from Excel) ----
+    function createTopicCheckboxes(){
       const container = document.getElementById("topicOptions");
-      const topics = [...new Set(allData.map(d => d.topic))].sort((a,b)=> a.localeCompare(b, 'vi'));
-      container.innerHTML = '';
+      const topics = [...new Set(allData.map(d=>d.topic))]
+        .sort((a,b)=>a.localeCompare(b,'vi'));
+      container.innerHTML='';
 
-      // All toggle
       const allBox = document.createElement("div");
-      allBox.className = "topic-option";
-      allBox.innerHTML = `<input type="checkbox" id="allTopics"> <label for="allTopics"><strong>Tất cả</strong></label>`;
+      allBox.className="topic-option";
+      allBox.innerHTML = `<input type="checkbox" id="allTopics">
+                          <label for="allTopics"><strong>Tất cả</strong></label>`;
       container.appendChild(allBox);
 
-      // Numbered topics in grid
-      topics.forEach((topic, idx) => {
+      topics.forEach(topic=>{
         const div = document.createElement("div");
-        div.className = "topic-option";
+        div.className="topic-option";
         div.innerHTML = `
           <input type="checkbox" class="topicCheckbox" data-key="${topic.toLowerCase()}" value="${topic}">
-          <label>${idx + 1}. ${topic}</label>
+          <label>${topic}</label>
         `;
         container.appendChild(div);
       });
 
-      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-        cb.addEventListener("change", handleTopicFilter);
+      container.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+        cb.addEventListener("change", handleTopicFilter, {passive:true});
       });
 
       handleTopicFilter();
     }
 
-    // ---------------- Filtering ----------------
-    function handleTopicFilter() {
+    // ---- Filtering ----
+    function handleTopicFilter(){
       const checkAll = document.getElementById("allTopics")?.checked;
       const checkboxes = document.querySelectorAll(".topicCheckbox");
       let selectedKeys = [];
 
-      if (checkAll) {
+      if(checkAll){
         filteredData = [...allData];
-        checkboxes.forEach(cb => cb.checked = false);
-      } else {
-        selectedKeys = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.dataset.key);
-        filteredData = selectedKeys.length ? allData.filter(item => selectedKeys.includes(item.topicKey)) : [];
+        checkboxes.forEach(cb=>cb.checked=false);
+      }else{
+        selectedKeys = Array.from(checkboxes).filter(cb=>cb.checked).map(cb=>cb.dataset.key);
+        filteredData = selectedKeys.length ? allData.filter(i=>selectedKeys.includes(i.topicKey)) : [];
       }
 
       usedIndexes = [];
       updateProgress();
       setButtonsState();
 
-      if (filteredData.length > 0) {
-        nextQuestion();
-      } else {
-        setQA("Vui lòng chọn ít nhất một chủ đề!", "");
-      }
+      if(filteredData.length>0) nextQuestion();
+      else setQA("Vui lòng chọn ít nhất một chủ đề!","");
     }
 
-    // ---------------- Q/A flow ----------------
-    function nextQuestion() {
-      if (!filteredData.length) return;
-      if (usedIndexes.length === filteredData.length) usedIndexes = [];
+    // ---- Q/A flow ----
+    function nextQuestion(){
+      if(!filteredData.length) return;
+      if(usedIndexes.length===filteredData.length) usedIndexes=[];
 
-      const available = filteredData.map((_, i) => i).filter(i => !usedIndexes.includes(i));
-      currentIndex = available[Math.floor(Math.random() * available.length)];
+      const available = filteredData.map((_,i)=>i).filter(i=>!usedIndexes.includes(i));
+      currentIndex = available[Math.floor(Math.random()*available.length)];
       usedIndexes.push(currentIndex);
 
       const q = filteredData[currentIndex];
       setQA(q.vi, q.en, false);
       updateProgress();
-      setButtonsState(false); // enable showAnswer
+      setButtonsState(false);
+      document.getElementById("question").scrollIntoView({behavior:'smooth', block:'center'});
     }
 
-    function showAnswer() {
+    function showAnswer(){
       const ans = document.getElementById("answer");
       ans.classList.add("show");
       speak(ans.innerText);
     }
 
-    function setQA(qText, aText, reveal=true) {
+    function setQA(qText, aText, reveal=true){
       const q = document.getElementById("question");
       const a = document.getElementById("answer");
       q.innerText = qText || "";
@@ -202,56 +229,38 @@
       a.classList.toggle("show", !!reveal && !!aText);
     }
 
-    function updateProgress() {
+    function updateProgress(){
       const el = document.getElementById("progress");
       el.innerText = `${Math.min(usedIndexes.length, filteredData.length)}/${filteredData.length} câu`;
     }
 
-    function setButtonsState(disableAllIfEmpty = (filteredData.length === 0)) {
+    function setButtonsState(disableAllIfEmpty=(filteredData.length===0)){
       document.getElementById("nextBtn").disabled = disableAllIfEmpty;
       document.getElementById("showAnswerBtn").disabled = disableAllIfEmpty || !document.getElementById("answer").innerText;
-      // Always hide answer when moving to a new question
-      if (!disableAllIfEmpty) document.getElementById("answer").classList.remove("show");
+      if(!disableAllIfEmpty) document.getElementById("answer").classList.remove("show");
     }
 
-    // ---------------- Speech Synthesis ----------------
-    function initVoices() {
-      voices = window.speechSynthesis.getVoices();
-    }
-    window.speechSynthesis.addEventListener('voiceschanged', initVoices);
-    initVoices();
-
-    function speak(text) {
-      if (!text) return;
-      try {
-        speechSynthesis.cancel(); // clear any pending
+    // ---- Speech ----
+    function speak(text){
+      if(!text || !('speechSynthesis' in window)) return;
+      try{
+        speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
         u.lang = "en-US";
-        let v =
-          voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('google')) ||
-          voices.find(v => v.lang === 'en-US') ||
-          voices.find(v => v.lang.startsWith('en')) ||
-          voices[0];
-        if (v) u.voice = v;
+        const v =
+          voices.find(v=>v.lang==='en-US' && v.name.toLowerCase().includes('google')) ||
+          voices.find(v=>v.lang==='en-US') ||
+          voices.find(v=>v.lang.startsWith('en')) || voices[0];
+        if(v) u.voice = v;
         speechSynthesis.speak(u);
-      } catch (e) {
-        console.warn('TTS error:', e);
-      }
+      }catch(e){ console.warn('TTS error:', e); }
     }
 
-    // ---------------- Events ----------------
-    document.getElementById("nextBtn").addEventListener("click", nextQuestion);
-    document.getElementById("showAnswerBtn").addEventListener("click", showAnswer);
+    // ---- Events ----
+    document.getElementById("nextBtn").addEventListener("click", nextQuestion, {passive:true});
+    document.getElementById("showAnswerBtn").addEventListener("click", showAnswer, {passive:true});
 
-    // Keyboard shortcuts: Space = show, Enter = next
-    window.addEventListener('keydown', (e) => {
-      const tag = document.activeElement?.tagName?.toLowerCase();
-      if (tag === 'input' || tag === 'textarea') return; // don't hijack typing
-      if (e.code === 'Space') { e.preventDefault(); if (!document.getElementById("showAnswerBtn").disabled) showAnswer(); }
-      if (e.code === 'Enter') { e.preventDefault(); if (!document.getElementById("nextBtn").disabled) nextQuestion(); }
-    });
-
-    // ---------------- Start ----------------
+    // ---- Start ----
     tryLoadExcelFiles();
   </script>
 </body>
