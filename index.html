@@ -4,12 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>USPEAK – Talk to Kid</title>
-  <!-- XLSX to read Excel -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- Icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root { --brand:#002F87; --ok:#2fad4b; --fg:#222; --muted:#667085; }
+    :root { --brand:#002F87; --ok:#2fad4b; --fg:#111; --muted:#667085; }
     *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     html,body{ height:100%; }
     body{
@@ -25,32 +23,32 @@
     .header h1{ margin:4px 0 6px; font-size:24px; color:#e11; }
     .header p{ margin:0 0 12px; color:var(--muted); font-size:14px; }
 
-    .topic-wrap{ margin:6px 0 10px; }
-    .topic-title{ font-weight:700; color:var(--fg); display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-
-    /* Compact grid (~1/2 size) */
+    /* --- VÙNG CHỦ ĐỀ: nhỏ, phụ --- */
+    .topic-wrap{ margin:4px 0 8px; }
+    .topic-title{ font-weight:700; color:#1f2937; display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:.9rem; }
     .topic-options{
       display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap:6px; text-align:left;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* nhỏ hơn */
+      gap:4px; text-align:left;
     }
     .topic-option{
-      background:#f6f7fb; border:1px solid #e6e8f0; border-radius:8px;
-      padding:4px 6px; display:flex; align-items:center; gap:6px;
-      font-size:.84rem; line-height:1.2;
+      background:#f6f7fb; border:1px solid #e6e8f0; border-radius:6px;
+      padding:3px 5px; display:flex; align-items:center; gap:6px;
+      font-size:.7rem; line-height:1.15;
     }
-    .topic-option input{ width:18px; height:18px; cursor:pointer; }
+    .topic-option input{ width:14px; height:14px; cursor:pointer; }
 
+    /* --- Q&A: to, nổi bật --- */
     .question{
-      text-align:center; color:var(--fg); font-weight:800;
-      margin:14px 0 6px; min-height:2.2em; font-size:22px;
+      text-align:center; color:var(--fg); font-weight:900;
+      margin:20px 0 10px; min-height:2.2em; font-size:32px;
     }
     .answer{
-      text-align:center; color:#0a7a0a; font-weight:700;
-      display:none; margin-bottom:6px; min-height:1.8em; font-size:18px;
+      text-align:center; color:#0a7a0a; font-weight:800;
+      display:none; margin-bottom:12px; min-height:1.8em; font-size:28px;
     }
     .answer.show{ display:block; }
-    #progress{ text-align:center; font-weight:700; margin:6px 0 12px; }
+    #progress{ text-align:center; font-weight:800; margin:8px 0 14px; }
 
     .actions{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
     .btn{
@@ -63,18 +61,17 @@
     .btn-secondary{ background:var(--ok); }
     .hint{ text-align:center; color:var(--muted); font-size:12px; margin-top:6px; }
 
-    /* —— Mobile first —— */
+    /* Mobile */
     @media (max-width: 640px){
       body{ padding:12px; }
       .container{ padding:14px 12px; border-radius:16px; }
       .header h1{ font-size:20px; }
       .header p{ font-size:13px; }
-      .topic-options{ grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px; } /* 2 cột trên màn nhỏ */
-      .topic-option{ padding:4px 6px; font-size:.82rem; }
-      .question{ font-size:20px; }
-      .answer{ font-size:16px; }
+      .topic-options{ grid-template-columns: repeat(2, minmax(0,1fr)); gap:4px; }
+      .topic-option{ padding:3px 5px; font-size:.7rem; }
+      .question{ font-size:28px; }
+      .answer{ font-size:24px; }
       .btn{ width:100%; justify-content:center; padding:12px 14px; font-size:15px; }
-      .actions{ gap:6px; }
     }
     /* Tablet */
     @media (min-width: 641px) and (max-width: 900px){
@@ -106,18 +103,18 @@
   </div>
 
   <script>
-    // ---- State ----
+    // ===== State =====
     let allData=[], filteredData=[], usedIndexes=[], currentIndex=-1, voices=[];
     const possibleFiles=['Uspeak_TTK.xlsx','data.xlsx'];
 
-    // ---- Voices (safe for mobile) ----
+    // ===== Voices (mobile-safe) =====
     function initVoices(){ voices = speechSynthesis.getVoices(); }
     if ('speechSynthesis' in window){
       speechSynthesis.addEventListener('voiceschanged', initVoices);
       initVoices();
     }
 
-    // ---- Load Excel ----
+    // ===== Load Excel =====
     async function tryLoadExcelFiles(){
       for(const file of possibleFiles){
         try{
@@ -129,8 +126,8 @@
           const json = XLSX.utils.sheet_to_json(sheet);
 
           const mapped = json.map(r=>({
-            topic: r["CHU_DE"]?.toString().trim(),                   // giữ nguyên số thứ tự có sẵn
-            topicKey: r["CHU_DE"]?.toString().trim().toLowerCase(),  // key để lọc không phân biệt hoa/thường
+            topic: r["CHU_DE"]?.toString().trim(),                   // nguyên gốc (có thể có số)
+            topicKey: r["CHU_DE"]?.toString().trim().toLowerCase(),  // key để lọc
             vi: r["DE_BAI"]?.toString().trim(),
             en: r["DAP_AN"]?.toString().trim()
           })).filter(x=>x.topic && x.vi && x.en);
@@ -147,25 +144,32 @@
         "Kiểm tra tên cột: CHU_DE, DE_BAI, DAP_AN và đặt file .xlsx cùng thư mục.";
     }
 
-    // ---- Build topic grid (use numbering from Excel) ----
+    // Loại bỏ số thứ tự đầu chuỗi nếu có (vd: "4- Eating" -> "Eating")
+    function stripLeadingNumber(s){
+      return (s || '').replace(/^\s*\d+\s*[\.\-–—:]\s*/,'').trim();
+    }
+
+    // ===== Build topic grid (auto-number 1..n hiển thị) =====
     function createTopicCheckboxes(){
       const container = document.getElementById("topicOptions");
       const topics = [...new Set(allData.map(d=>d.topic))]
         .sort((a,b)=>a.localeCompare(b,'vi'));
       container.innerHTML='';
 
+      // "Tất cả"
       const allBox = document.createElement("div");
       allBox.className="topic-option";
       allBox.innerHTML = `<input type="checkbox" id="allTopics">
                           <label for="allTopics"><strong>Tất cả</strong></label>`;
       container.appendChild(allBox);
 
-      topics.forEach(topic=>{
+      topics.forEach((topic, idx)=>{
         const div = document.createElement("div");
         div.className="topic-option";
+        const display = `${idx+1}. ${stripLeadingNumber(topic)}`; // luôn 1,2,3,… và bỏ số cũ nếu có
         div.innerHTML = `
           <input type="checkbox" class="topicCheckbox" data-key="${topic.toLowerCase()}" value="${topic}">
-          <label>${topic}</label>
+          <label>${display}</label>
         `;
         container.appendChild(div);
       });
@@ -177,7 +181,7 @@
       handleTopicFilter();
     }
 
-    // ---- Filtering ----
+    // ===== Filtering =====
     function handleTopicFilter(){
       const checkAll = document.getElementById("allTopics")?.checked;
       const checkboxes = document.querySelectorAll(".topicCheckbox");
@@ -199,7 +203,7 @@
       else setQA("Vui lòng chọn ít nhất một chủ đề!","");
     }
 
-    // ---- Q/A flow ----
+    // ===== Q/A flow =====
     function nextQuestion(){
       if(!filteredData.length) return;
       if(usedIndexes.length===filteredData.length) usedIndexes=[];
@@ -240,7 +244,7 @@
       if(!disableAllIfEmpty) document.getElementById("answer").classList.remove("show");
     }
 
-    // ---- Speech ----
+    // ===== Speech =====
     function speak(text){
       if(!text || !('speechSynthesis' in window)) return;
       try{
@@ -256,11 +260,9 @@
       }catch(e){ console.warn('TTS error:', e); }
     }
 
-    // ---- Events ----
+    // ===== Events & Start =====
     document.getElementById("nextBtn").addEventListener("click", nextQuestion, {passive:true});
     document.getElementById("showAnswerBtn").addEventListener("click", showAnswer, {passive:true});
-
-    // ---- Start ----
     tryLoadExcelFiles();
   </script>
 </body>
