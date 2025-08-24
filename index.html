@@ -7,103 +7,86 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
+    :root { --brand:#002F87; --ok:#4CAF50; }
+    * { box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', system-ui, sans-serif;
       background: linear-gradient(135deg, #002F87, #6A75B3);
-      min-height: 100vh;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; padding: 20px;
     }
     .container {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-      padding: 30px;
-      max-width: 800px;
-      width: 100%;
-      text-align: center;
+      background: #fff; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,.1);
+      padding: 24px; max-width: 960px; width: 100%;
     }
-    .header h1 {
-      font-size: 1.8em;
-      color: red;
-      margin-bottom: 10px;
-    }
-    .header p {
-      font-size: 1em;
-      color: #666;
-      margin-bottom: 20px;
-    }
-    .question {
-      font-size: 2em;
-      font-weight: bold;
-      margin: 25px 0;
-      color: #333;
-    }
-    .answer {
-      font-size: 1.2em;
-      color: green;
-      font-weight: bold;
-      display: none;
-      margin-bottom: 10px;
-    }
-    .answer.show { display: block; }
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 20px;
-      margin: 10px;
-      font-weight: bold;
-      font-size: 1em;
-      cursor: pointer;
-    }
-    .btn-primary { background: #002F87; color: white; }
-    .btn-secondary { background: #4CAF50; color: white; }
+    .header h1 { font-size: 1.6rem; color: #e11; margin: 0 0 6px; text-align: center; }
+    .header p { margin: 0 0 14px; color: #666; text-align: center; }
+    .topic-wrap { margin: 10px 0 14px; }
+    .topic-title { font-weight: 700; margin: 0 0 8px; color: #333; display:flex; align-items:center; gap:8px;}
     .topic-options {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: 10px;
-      margin-top: 10px;
+      text-align: left;
     }
     .topic-option {
-      background: #f0f0f0;
-      padding: 8px 12px;
+      background: #f6f7fb;
+      border: 1px solid #e6e8f0;
+      padding: 8px 10px;
       border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: flex; align-items: center; gap: 8px;
     }
-    .topic-option input[type="checkbox"] {
-      cursor: pointer;
+    .topic-option input { cursor: pointer; }
+    .question {
+      font-size: 1.6rem; font-weight: 700; margin: 16px 0 8px; color: #222; text-align:center;
+      min-height: 2.2em; /* avoid jump */
     }
+    .answer {
+      font-size: 1.15rem; color: #0a7a0a; font-weight: 700; display: none; margin-bottom: 8px; text-align:center;
+      min-height: 1.8em;
+    }
+    .answer.show { display: block; }
+    #progress { font-weight: 700; margin: 6px 0 14px; text-align:center; }
+    .actions { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+    .btn {
+      padding: 12px 18px; border: none; border-radius: 20px; font-weight: 700; font-size: 1rem; cursor: pointer;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn[disabled] { opacity: .5; cursor: not-allowed; }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-secondary { background: var(--ok); color: #fff; }
+    .hint { text-align:center; font-size:.9rem; color:#666; margin-top:6px;}
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>Uspeak - Talk to kid</h1>
-      <p>Dữ liệu sẽ được update mới sau từng buổi học.</p>
+      <h1>USPEAK – TALK TO KID</h1>
+      <p>Dữ liệu sẽ được cập nhật sau từng buổi học.</p>
     </div>
 
-    <div id="topicOptions" class="topic-options">Đang tải dữ liệu...</div>
+    <div class="topic-wrap">
+      <div class="topic-title"><i class="fa fa-list-ul"></i> Chọn chủ đề (CHU_DE)</div>
+      <div id="topicOptions" class="topic-options">Đang tải dữ liệu...</div>
+    </div>
+
     <div class="question" id="question">Chưa có dữ liệu.</div>
     <div class="answer" id="answer"></div>
+    <div id="progress">0/0 câu</div>
 
-    <button class="btn btn-primary" id="showAnswerBtn" disabled><i class="fa fa-eye"></i> Xem kết quả</button>
-    <button class="btn btn-secondary" id="nextBtn" disabled><i class="fa fa-dice"></i> Câu tiếp theo</button>
+    <div class="actions">
+      <button class="btn btn-primary" id="showAnswerBtn" disabled><i class="fa fa-eye"></i> Xem kết quả (Space)</button>
+      <button class="btn btn-secondary" id="nextBtn" disabled><i class="fa fa-dice"></i> Câu tiếp theo (Enter)</button>
+    </div>
+    <div class="hint">Mẹo: Bấm <b>Space</b> để xem đáp án, <b>Enter</b> để sang câu tiếp theo.</div>
   </div>
 
   <script>
-    let allData = [], filteredData = [], currentIndex = -1;
+    // ---------------- State ----------------
+    let allData = [], filteredData = [], usedIndexes = [], currentIndex = -1;
+    let voices = [];
+    const possibleFiles = ['Uspeak_TTK.xlsx', 'data.xlsx'];
 
-    const possibleFiles = [
-      'Uspeak_TTK.xlsx',
-      'data.xlsx'
-    ];
-
+    // ---------------- Data Loading ----------------
     async function tryLoadExcelFiles() {
       for (const file of possibleFiles) {
         try {
@@ -115,35 +98,46 @@
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const json = XLSX.utils.sheet_to_json(sheet);
 
-          allData = json.map(row => ({
+          const mapped = json.map(row => ({
             topic: row["CHU_DE"]?.toString().trim(),
+            topicKey: row["CHU_DE"]?.toString().trim().toLowerCase(),
             vi: row["DE_BAI"]?.toString().trim(),
             en: row["DAP_AN"]?.toString().trim()
           })).filter(item => item.topic && item.vi && item.en);
 
+          if (!mapped.length) continue;
+
+          allData = mapped;
           createTopicCheckboxes();
           return;
         } catch (err) {
-          console.log("Không thể đọc file:", file);
+          console.log("Không thể đọc file:", file, err);
         }
       }
-      document.getElementById("question").innerText = "Không tìm thấy file Excel phù hợp!";
+      document.getElementById("topicOptions").innerHTML = '<div style="grid-column:1/-1;color:#b00">Không tìm thấy file Excel phù hợp!</div>';
+      document.getElementById("question").innerText = "Vui lòng kiểm tra tên cột: CHU_DE, DE_BAI, DAP_AN.";
     }
 
+    // ---------------- Topic Grid (numbered) ----------------
     function createTopicCheckboxes() {
       const container = document.getElementById("topicOptions");
-      const topics = [...new Set(allData.map(d => d.topic))].sort();
+      const topics = [...new Set(allData.map(d => d.topic))].sort((a,b)=> a.localeCompare(b, 'vi'));
       container.innerHTML = '';
 
+      // All toggle
       const allBox = document.createElement("div");
       allBox.className = "topic-option";
       allBox.innerHTML = `<input type="checkbox" id="allTopics"> <label for="allTopics"><strong>Tất cả</strong></label>`;
       container.appendChild(allBox);
 
-      topics.forEach(topic => {
+      // Numbered topics in grid
+      topics.forEach((topic, idx) => {
         const div = document.createElement("div");
         div.className = "topic-option";
-        div.innerHTML = `<input type="checkbox" class="topicCheckbox" value="${topic}"> <label>${topic}</label>`;
+        div.innerHTML = `
+          <input type="checkbox" class="topicCheckbox" data-key="${topic.toLowerCase()}" value="${topic}">
+          <label>${idx + 1}. ${topic}</label>
+        `;
         container.appendChild(div);
       });
 
@@ -154,56 +148,110 @@
       handleTopicFilter();
     }
 
+    // ---------------- Filtering ----------------
     function handleTopicFilter() {
-      const checkAll = document.getElementById("allTopics").checked;
+      const checkAll = document.getElementById("allTopics")?.checked;
       const checkboxes = document.querySelectorAll(".topicCheckbox");
-
-      let selectedTopics = [];
+      let selectedKeys = [];
 
       if (checkAll) {
         filteredData = [...allData];
         checkboxes.forEach(cb => cb.checked = false);
       } else {
-        selectedTopics = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
-        filteredData = allData.filter(item => selectedTopics.includes(item.topic));
+        selectedKeys = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.dataset.key);
+        filteredData = selectedKeys.length ? allData.filter(item => selectedKeys.includes(item.topicKey)) : [];
       }
 
-      document.getElementById("nextBtn").disabled = filteredData.length === 0;
-      document.getElementById("showAnswerBtn").disabled = true;
+      usedIndexes = [];
+      updateProgress();
+      setButtonsState();
 
       if (filteredData.length > 0) {
         nextQuestion();
       } else {
-        document.getElementById("question").innerText = "Vui lòng chọn ít nhất một chủ đề!";
-        document.getElementById("answer").innerText = "";
+        setQA("Vui lòng chọn ít nhất một chủ đề!", "");
       }
     }
 
+    // ---------------- Q/A flow ----------------
     function nextQuestion() {
-      if (filteredData.length === 0) return;
-      currentIndex = Math.floor(Math.random() * filteredData.length);
+      if (!filteredData.length) return;
+      if (usedIndexes.length === filteredData.length) usedIndexes = [];
+
+      const available = filteredData.map((_, i) => i).filter(i => !usedIndexes.includes(i));
+      currentIndex = available[Math.floor(Math.random() * available.length)];
+      usedIndexes.push(currentIndex);
+
       const q = filteredData[currentIndex];
-      document.getElementById("question").innerText = q.vi;
-      document.getElementById("answer").innerText = q.en;
-      document.getElementById("answer").classList.remove("show");
-      document.getElementById("showAnswerBtn").disabled = false;
+      setQA(q.vi, q.en, false);
+      updateProgress();
+      setButtonsState(false); // enable showAnswer
     }
 
     function showAnswer() {
-      const text = document.getElementById("answer").innerText;
-      document.getElementById("answer").classList.add("show");
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "en-US";
-      const voices = speechSynthesis.getVoices();
-      const preferred = voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('google'));
-      if (preferred) utterance.voice = preferred;
-      speechSynthesis.speak(utterance);
+      const ans = document.getElementById("answer");
+      ans.classList.add("show");
+      speak(ans.innerText);
     }
 
+    function setQA(qText, aText, reveal=true) {
+      const q = document.getElementById("question");
+      const a = document.getElementById("answer");
+      q.innerText = qText || "";
+      a.innerText = aText || "";
+      a.classList.toggle("show", !!reveal && !!aText);
+    }
+
+    function updateProgress() {
+      const el = document.getElementById("progress");
+      el.innerText = `${Math.min(usedIndexes.length, filteredData.length)}/${filteredData.length} câu`;
+    }
+
+    function setButtonsState(disableAllIfEmpty = (filteredData.length === 0)) {
+      document.getElementById("nextBtn").disabled = disableAllIfEmpty;
+      document.getElementById("showAnswerBtn").disabled = disableAllIfEmpty || !document.getElementById("answer").innerText;
+      // Always hide answer when moving to a new question
+      if (!disableAllIfEmpty) document.getElementById("answer").classList.remove("show");
+    }
+
+    // ---------------- Speech Synthesis ----------------
+    function initVoices() {
+      voices = window.speechSynthesis.getVoices();
+    }
+    window.speechSynthesis.addEventListener('voiceschanged', initVoices);
+    initVoices();
+
+    function speak(text) {
+      if (!text) return;
+      try {
+        speechSynthesis.cancel(); // clear any pending
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "en-US";
+        let v =
+          voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('google')) ||
+          voices.find(v => v.lang === 'en-US') ||
+          voices.find(v => v.lang.startsWith('en')) ||
+          voices[0];
+        if (v) u.voice = v;
+        speechSynthesis.speak(u);
+      } catch (e) {
+        console.warn('TTS error:', e);
+      }
+    }
+
+    // ---------------- Events ----------------
     document.getElementById("nextBtn").addEventListener("click", nextQuestion);
     document.getElementById("showAnswerBtn").addEventListener("click", showAnswer);
 
+    // Keyboard shortcuts: Space = show, Enter = next
+    window.addEventListener('keydown', (e) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea') return; // don't hijack typing
+      if (e.code === 'Space') { e.preventDefault(); if (!document.getElementById("showAnswerBtn").disabled) showAnswer(); }
+      if (e.code === 'Enter') { e.preventDefault(); if (!document.getElementById("nextBtn").disabled) nextQuestion(); }
+    });
+
+    // ---------------- Start ----------------
     tryLoadExcelFiles();
   </script>
 </body>
